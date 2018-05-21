@@ -10,6 +10,7 @@ namespace WOWSClanCollector
     {
         static void Main(string[] args)
         {
+            Console.WriteLine("WOWS Clan Collector");
         }
     }
 }
