@@ -32,6 +32,9 @@ namespace WOWSClanCollector
             int pageMax = clanPack.meta.total / 100 + 1;
             Console.WriteLine("pageMax = {0}", pageMax);
 
+            //debug
+            pageMax = 1;
+
             //get all clans via api
             for (int page = 1; page <= pageMax; page++)
             {
@@ -43,15 +46,17 @@ namespace WOWSClanCollector
                     clans.Add(clan);
                     //Console.WriteLine("Clan {0} {1} {2} added!", clan.clan_id, clan.tag, clan.name);
                 }
-                Console.WriteLine("Clans in ClanPack {0} added!");
+                Console.WriteLine("Clans in ClanPack {0} added!", page);
                 Console.WriteLine();
             }
 
             //connect to database
             MySqlConnection conn;
+            MySqlCommand command;
+            MySqlDataReader reader;
             try
             {
-                conn = new MySqlConnection("server=59.110.222.86;User Id=deto;password=WOWSdr2018;Database=wows_detonation");
+                conn = new MySqlConnection("server=59.110.222.86;User Id=deto;password=WOWSdr2018;Database=wows_detonation;SslMode=None");
                 conn.Open();
             }
             catch (Exception e)
@@ -62,8 +67,17 @@ namespace WOWSClanCollector
             Console.WriteLine("Database connected!");
 
             //create new aisa_clan_player_tmp table
-            MySqlCommand command = new MySqlCommand("CREATE TABLE `asia_clan_player_tmp` (`cid` int(11) NOT NULL,  `id` int(11) NOT NULL,  PRIMARY KEY(`cid`,`id`)) ENGINE = InnoDB DEFAULT CHARSET = latin1", conn);
-            command.ExecuteReader();
+            try
+            {
+                command = new MySqlCommand("CREATE TABLE `asia_clan_player_tmp` (  `cid` int(11) NOT NULL,  `id` int(11) NOT NULL,  PRIMARY KEY(`cid`,`id`),  KEY `id` (`id`),  CONSTRAINT FOREIGN KEY(`id`) REFERENCES `asia_player` (`id`),  CONSTRAINT FOREIGN KEY(`cid`) REFERENCES `asia_clan` (`cid`)) ENGINE = InnoDB DEFAULT CHARSET = latin1;", conn);
+                reader = command.ExecuteReader();
+                reader.Close();
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.Message);
+                throw;
+            }
 
             //deal whth each clan
             foreach (var clan in clans)
@@ -74,20 +88,56 @@ namespace WOWSClanCollector
                 ClanDetail clanDetail = await Proxy.GetClanDetail(clan.clan_id);
 
                 //check new clan or not
+                command = new MySqlCommand("SELECT * FROM wows_detonation.asia_clan where clan_id = " + clanDetail.clan_id, conn);
+                reader = command.ExecuteReader();
+                if (!reader.Read())
+                {
+                    reader.Close();
+                    command = new MySqlCommand("INSERT INTO `wows_detonation`.`asia_clan` (`clan_id`, `created_at`, `tag`, `name`) VALUES (" + clanDetail.clan_id + ", " + clanDetail.created_at + ", '" + clanDetail.tag + "', '" + clanDetail.name + "');", conn);
+                    reader = command.ExecuteReader();
+                    reader.Close();
+                }
+                if (!reader.IsClosed)
+                {
+                    reader.Close();
+                }
 
-                //get all clan menbers' account_id
+                //get clan cid
+                command = new MySqlCommand("SELECT * FROM wows_detonation.asia_clan where clan_id = " + clanDetail.clan_id, conn);
+                reader = command.ExecuteReader();
+                int cid = -1;
+                while (reader.Read())
+                {
+                    cid = reader.GetInt32(0);
+                }
+                reader.Close();
 
                 //insert into asia_cian_player_tmp
-
+                foreach (var account_id in clanDetail.members_ids)
+                {
+                    command = new MySqlCommand("SELECT * FROM wows_detonation.asia_player where account_id = " + account_id, conn);
+                    reader = command.ExecuteReader();
+                    int id = -1;
+                    while (reader.Read())
+                    {
+                        id = reader.GetInt32(0);
+                    }
+                    reader.Close();
+                    command = new MySqlCommand("INSERT INTO `wows_detonation`.`asia_clan_player_tmp` (`cid`, `id`) VALUES (" + cid + ", " + id + ");", conn);
+                    reader = command.ExecuteReader();
+                    reader.Close();
+                }
             }
 
             //drop old table
             command = new MySqlCommand("DROP TABLE `wows_detonation`.`asia_clan_player`;", conn);
-            command.ExecuteReader();
+            reader = command.ExecuteReader();
+            reader.Close();
 
             //alter tmp name to asia_clan_player
             command = new MySqlCommand("ALTER TABLE `wows_detonation`.`asia_clan_player_tmp` RENAME TO  `wows_detonation`.`asia_clan_player` ; ", conn);
             command.ExecuteReader();
+            reader.Close();
 
             conn.Close();
         }
