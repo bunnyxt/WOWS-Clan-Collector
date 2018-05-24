@@ -47,7 +47,7 @@ namespace WOWSClanCollector
                 {
                     Console.WriteLine(e.Message);
                     Console.WriteLine("now retry...");
-                    Console.WriteWarning(DateTime.Now + " : " + e.Message);
+                    Console.WriteWarning(e.Message);
                 }
             }
 
@@ -93,7 +93,7 @@ namespace WOWSClanCollector
                 {
                     Console.WriteLine(e.Message);
                     Console.WriteLine("now retry...");
-                    Console.WriteWarning(DateTime.Now + " : " + e.Message);
+                    Console.WriteWarning(e.Message);
                 }
             }
 

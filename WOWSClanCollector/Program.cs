@@ -139,7 +139,7 @@ namespace WOWSClanCollector
                     else
                     {
                         System.Console.WriteLine("special account_id " + account_id + " detected!");
-                        Console.WriteWarning(DateTime.Now + " : special account_id " + account_id);
+                        Console.WriteWarning("special account_id " + account_id);
                     }
                     Console.WriteLine();
                 }
