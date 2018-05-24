@@ -5,11 +5,14 @@ using System.Text;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using MySql.Data.MySqlClient;
+using System.Text.RegularExpressions;
 
 namespace WOWSClanCollector
 {
     class Program
     {
+        private static string result;
+
         static void Main(string[] args)
         {
             Console.WriteLine("WOWS Clan Collector");
@@ -93,7 +96,7 @@ namespace WOWSClanCollector
                 if (!reader.Read())
                 {
                     reader.Close();
-                    command = new MySqlCommand("INSERT INTO `wows_detonation`.`asia_clan` (`clan_id`, `created_at`, `tag`, `name`) VALUES (" + clanDetail.clan_id + ", " + clanDetail.created_at + ", '" + clanDetail.tag + "', '" + clanDetail.name + "');", conn);
+                    command = new MySqlCommand("INSERT INTO `wows_detonation`.`asia_clan` (`clan_id`, `created_at`, `tag`, `name`) VALUES (" + clanDetail.clan_id + ", " + clanDetail.created_at + ", '" + clanDetail.tag + "', '" + Modify(clanDetail.name) + "');", conn);
                     reader = command.ExecuteReader();
                     reader.Close();
                     Console.WriteLine("new clan " + clanDetail.tag);
@@ -136,7 +139,7 @@ namespace WOWSClanCollector
                     else
                     {
                         System.Console.WriteLine("special account_id " + account_id + " detected!");
-                        Console.WriteWarning(DateTime.Now + " : special account_id" + account_id);
+                        Console.WriteWarning(DateTime.Now + " : special account_id " + account_id);
                     }
                     Console.WriteLine();
                 }
@@ -153,6 +156,14 @@ namespace WOWSClanCollector
             reader.Close();
 
             conn.Close();
+        }
+
+        static string Modify(string str)
+        {
+            string pattern = "'";
+            Regex regex = new Regex(pattern);
+            string result = regex.Replace(str, "''");
+            return result;
         }
     }
 }
