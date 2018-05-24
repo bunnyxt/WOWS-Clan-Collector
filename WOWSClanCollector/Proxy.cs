@@ -47,13 +47,14 @@ namespace WOWSClanCollector
                 {
                     Console.WriteLine(e.Message);
                     Console.WriteLine("now retry...");
+                    Console.WriteWarning(DateTime.Now + " : " + e.Message);
                 }
             }
 
             return clanPack;
         }
 
-        public static async Task<ClanDetail> GetClanDetail(int clan_id)
+        public static async Task<ClanDetail> GetClanDetail(uint clan_id)
         {
             ClanDetailPack clanDetailPack = new ClanDetailPack();
 
@@ -92,6 +93,7 @@ namespace WOWSClanCollector
                 {
                     Console.WriteLine(e.Message);
                     Console.WriteLine("now retry...");
+                    Console.WriteWarning(DateTime.Now + " : " + e.Message);
                 }
             }
 

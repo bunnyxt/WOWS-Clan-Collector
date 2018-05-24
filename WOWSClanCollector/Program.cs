@@ -33,7 +33,7 @@ namespace WOWSClanCollector
             Console.WriteLine("pageMax = {0}", pageMax);
 
             //debug
-            pageMax = 1;
+            //pageMax = 1;
 
             //get all clans via api
             for (int page = 1; page <= pageMax; page++)
@@ -44,7 +44,7 @@ namespace WOWSClanCollector
                 foreach (var clan in clanPack.data)
                 {
                     clans.Add(clan);
-                    //Console.WriteLine("Clan {0} {1} {2} added!", clan.clan_id, clan.tag, clan.name);
+                    Console.WriteLine("Clan {0} {1} {2} added!", clan.clan_id, clan.tag, clan.name);
                 }
                 Console.WriteLine("Clans in ClanPack {0} added!", page);
                 Console.WriteLine();
@@ -56,7 +56,7 @@ namespace WOWSClanCollector
             MySqlDataReader reader;
             try
             {
-                conn = new MySqlConnection("server=59.110.222.86;User Id=deto;password=WOWSdr2018;Database=wows_detonation;SslMode=None");
+                conn = new MySqlConnection("server=59.110.222.86;User Id=deto;password=WOWSdr2018;Database=wows_detonation;SslMode=None;charset=utf8");
                 conn.Open();
             }
             catch (Exception e)
@@ -96,9 +96,11 @@ namespace WOWSClanCollector
                     command = new MySqlCommand("INSERT INTO `wows_detonation`.`asia_clan` (`clan_id`, `created_at`, `tag`, `name`) VALUES (" + clanDetail.clan_id + ", " + clanDetail.created_at + ", '" + clanDetail.tag + "', '" + clanDetail.name + "');", conn);
                     reader = command.ExecuteReader();
                     reader.Close();
+                    Console.WriteLine("new clan " + clanDetail.tag);
                 }
                 if (!reader.IsClosed)
                 {
+                    Console.WriteLine("old clan " + clanDetail.tag);
                     reader.Close();
                 }
 
@@ -113,6 +115,7 @@ namespace WOWSClanCollector
                 reader.Close();
 
                 //insert into asia_cian_player_tmp
+                Console.WriteLine("now insert players in clan " + clanDetail.tag);
                 foreach (var account_id in clanDetail.members_ids)
                 {
                     command = new MySqlCommand("SELECT * FROM wows_detonation.asia_player where account_id = " + account_id, conn);
@@ -123,9 +126,19 @@ namespace WOWSClanCollector
                         id = reader.GetInt32(0);
                     }
                     reader.Close();
-                    command = new MySqlCommand("INSERT INTO `wows_detonation`.`asia_clan_player_tmp` (`cid`, `id`) VALUES (" + cid + ", " + id + ");", conn);
-                    reader = command.ExecuteReader();
-                    reader.Close();
+                    if (id != -1)
+                    {
+                        command = new MySqlCommand("INSERT INTO `wows_detonation`.`asia_clan_player_tmp` (`cid`, `id`) VALUES (" + cid + ", " + id + ");", conn);
+                        reader = command.ExecuteReader();
+                        reader.Close();
+                        Console.WriteLine(cid + "," + id + " inserted!");
+                    }
+                    else
+                    {
+                        System.Console.WriteLine("special account_id " + account_id + " detected!");
+                        Console.WriteWarning(DateTime.Now + " : special account_id" + account_id);
+                    }
+                    Console.WriteLine();
                 }
             }
 
