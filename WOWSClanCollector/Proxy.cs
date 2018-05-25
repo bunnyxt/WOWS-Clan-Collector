@@ -54,7 +54,7 @@ namespace WOWSClanCollector
             return clanPack;
         }
 
-        public static async Task<ClanDetail> GetClanDetail(uint clan_id)
+        public static async Task<ClanDetail> GetClanDetail(long clan_id)
         {
             ClanDetailPack clanDetailPack = new ClanDetailPack();
 

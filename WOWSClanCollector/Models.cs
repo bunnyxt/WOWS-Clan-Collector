@@ -24,7 +24,7 @@ namespace WOWSClanCollector
     {
         public int members_count { get; set; }
         public int created_at { get; set; }
-        public uint clan_id { get; set; }
+        public long clan_id { get; set; }
         public string tag { get; set; }
         public string name { get; set; }
     }
@@ -51,18 +51,18 @@ namespace WOWSClanCollector
         public int members_count { get; set; }
         public string name { get; set; }
         public string creator_name { get; set; }
-        public uint clan_id { get; set; }
+        public long clan_id { get; set; }
         public int created_at { get; set; }
         public int updated_at { get; set; }
         public string leader_name { get; set; }
-        public List<uint> members_ids { get; set; }
-        public uint creator_id { get; set; }
+        public List<long> members_ids { get; set; }
+        public long creator_id { get; set; }
         public string tag { get; set; }
         //public string old_name { get; set; }
         public bool is_clan_disbanded { get; set; }
         //public int renamed_at { get; set; }
         //public string old_tag { get; set; }
-        public uint leader_id { get; set; }
+        public long leader_id { get; set; }
         public string description { get; set; }
     }
 }
