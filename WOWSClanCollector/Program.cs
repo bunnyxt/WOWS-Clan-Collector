@@ -138,24 +138,29 @@ namespace WOWSClanCollector
                     }
                     else
                     {
-                        System.Console.WriteLine("special account_id " + account_id + " detected!");
+                        Console.WriteLine("special account_id " + account_id + " detected!");
                         Console.WriteWarning("special account_id " + account_id);
                     }
-                    Console.WriteLine();
                 }
+
+                Console.WriteLine();
+
             }
 
             //drop old table
             command = new MySqlCommand("DROP TABLE `wows_detonation`.`asia_clan_player`;", conn);
             reader = command.ExecuteReader();
+            Console.WriteLine("Drop old table succeed!");
             reader.Close();
 
             //alter tmp name to asia_clan_player
             command = new MySqlCommand("ALTER TABLE `wows_detonation`.`asia_clan_player_tmp` RENAME TO  `wows_detonation`.`asia_clan_player` ; ", conn);
             command.ExecuteReader();
             reader.Close();
+            Console.WriteLine("Alter tmp name succeed!");
 
             conn.Close();
+            Console.WriteLine("Database connection closed!");
         }
 
         static string Modify(string str)
