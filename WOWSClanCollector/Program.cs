@@ -16,7 +16,7 @@ namespace WOWSClanCollector
         static void Main(string[] args)
         {
             Console.WriteLine("WOWS Clan Collector");
-            Console.WriteLine("By.bunnyxt 2018-5-21");
+            Console.WriteLine("By.bunnyxt 2018-7-28");
             Console.WriteLine();
 
             Console.WriteLine("Start");
@@ -90,37 +90,68 @@ namespace WOWSClanCollector
                 //get clan detail
                 ClanDetail clanDetail = await Proxy.GetClanDetail(clan.clan_id);
 
+                int cid = -1;
+
                 //check new clan or not
                 command = new MySqlCommand("SELECT * FROM wows_detonation.asia_clan where clan_id = " + clanDetail.clan_id, conn);
                 reader = command.ExecuteReader();
                 if (!reader.Read())
                 {
+                    //new clan
                     reader.Close();
+
+                    //insert new clan
                     command = new MySqlCommand("INSERT INTO `wows_detonation`.`asia_clan` (`clan_id`, `created_at`, `tag`, `name`) VALUES (" + clanDetail.clan_id + ", " + clanDetail.created_at + ", '" + clanDetail.tag + "', '" + Modify(clanDetail.name) + "');", conn);
                     reader = command.ExecuteReader();
                     reader.Close();
                     Console.WriteLine("new clan " + clanDetail.tag);
+
+                    //get cid
+                    command = new MySqlCommand("SELECT * FROM wows_detonation.asia_clan where clan_id = " + clanDetail.clan_id, conn);
+                    reader = command.ExecuteReader();
+                    while (reader.Read())
+                    {
+                        cid = reader.GetInt32(0);
+                    }
+                    reader.Close();
                 }
                 if (!reader.IsClosed)
                 {
-                    Console.WriteLine("old clan " + clanDetail.tag);
-                    reader.Close();
-                }
-
-                //get clan cid
-                command = new MySqlCommand("SELECT * FROM wows_detonation.asia_clan where clan_id = " + clanDetail.clan_id, conn);
-                reader = command.ExecuteReader();
-                int cid = -1;
-                while (reader.Read())
-                {
+                    //old clan
                     cid = reader.GetInt32(0);
+                    string oldTag = reader.GetString(3);
+                    string oldName = reader.GetString(4);
+                    reader.Close();
+                    Console.WriteLine("old clan " + clanDetail.tag);
+
+                    //update old clan tag and name
+                    if (oldTag != clanDetail.tag)
+                    {
+                        Console.WriteLine("clan tag changed from " + oldTag + " to " + clanDetail.tag + " !");
+                        Console.WriteWarning("clan tag changed from " + oldTag + " to " + clanDetail.tag + " !");
+
+                        command = new MySqlCommand("UPDATE `wows_detonation`.`asia_clan` SET `tag`='" + clanDetail.tag + "' WHERE `cid`='" + cid + "';", conn);
+                        reader = command.ExecuteReader();
+                        reader.Close();
+                    }
+
+                    if (oldName != clanDetail.name)
+                    {
+                        Console.WriteLine("clan name changed from " + oldName + " to " + clanDetail.name + " !");
+                        Console.WriteWarning("clan name changed from " + oldName + " to " + clanDetail.name + " !");
+
+                        command = new MySqlCommand("UPDATE `wows_detonation`.`asia_clan` SET `name`='" + clanDetail.name + "' WHERE `cid`='" + cid + "';", conn);
+                        reader = command.ExecuteReader();
+                        reader.Close();
+                    }
+
                 }
-                reader.Close();
 
                 //insert into asia_cian_player_tmp
                 Console.WriteLine("now insert players in clan " + clanDetail.tag);
                 foreach (var account_id in clanDetail.members_ids)
                 {
+                    //get player id
                     command = new MySqlCommand("SELECT * FROM wows_detonation.asia_player where account_id = " + account_id, conn);
                     reader = command.ExecuteReader();
                     int id = -1;
@@ -129,8 +160,11 @@ namespace WOWSClanCollector
                         id = reader.GetInt32(0);
                     }
                     reader.Close();
+
+                    //check if player exist
                     if (id != -1)
                     {
+                        //player exist
                         command = new MySqlCommand("INSERT INTO `wows_detonation`.`asia_clan_player_tmp` (`cid`, `id`) VALUES (" + cid + ", " + id + ");", conn);
                         reader = command.ExecuteReader();
                         reader.Close();
@@ -138,6 +172,7 @@ namespace WOWSClanCollector
                     }
                     else
                     {
+                        //player not exist cause special reasons
                         Console.WriteLine("special account_id " + account_id + " detected!");
                         Console.WriteWarning("special account_id " + account_id);
                     }
