@@ -140,7 +140,7 @@ namespace WOWSClanCollector
                         Console.WriteLine("clan name changed from " + oldName + " to " + clanDetail.name + " !");
                         Console.WriteWarning("clan name changed from " + oldName + " to " + clanDetail.name + " !");
 
-                        command = new MySqlCommand("UPDATE `wows_detonation`.`asia_clan` SET `name`='" + clanDetail.name + "' WHERE `cid`='" + cid + "';", conn);
+                        command = new MySqlCommand("UPDATE `wows_detonation`.`asia_clan` SET `name`='" + Modify(clanDetail.name) + "' WHERE `cid`='" + cid + "';", conn);
                         reader = command.ExecuteReader();
                         reader.Close();
                     }
