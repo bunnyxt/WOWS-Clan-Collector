@@ -72,7 +72,7 @@ namespace WOWSClanCollector
             //create new aisa_clan_player_tmp table
             try
             {
-                command = new MySqlCommand("CREATE TABLE `asia_clan_player_tmp` (  `cid` int(11) NOT NULL,  `id` int(11) NOT NULL,  PRIMARY KEY(`cid`,`id`),  KEY `id` (`id`),  CONSTRAINT FOREIGN KEY(`id`) REFERENCES `asia_player` (`id`),  CONSTRAINT FOREIGN KEY(`cid`) REFERENCES `asia_clan` (`cid`)) ENGINE = InnoDB DEFAULT CHARSET = latin1;", conn);
+                command = new MySqlCommand("CREATE TABLE `asia_clan_player_tmp` (  `cid` int(11) NOT NULL,  `id` int(11) NOT NULL,  PRIMARY KEY(`cid`,`id`),  KEY `id` (`id`),  CONSTRAINT FOREIGN KEY(`id`) REFERENCES `asia_player` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,  CONSTRAINT FOREIGN KEY(`cid`) REFERENCES `asia_clan` (`cid`)) ENGINE = InnoDB DEFAULT CHARSET = latin1;", conn);
                 reader = command.ExecuteReader();
                 reader.Close();
             }
